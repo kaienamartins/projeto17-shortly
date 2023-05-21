@@ -12,10 +12,7 @@ export async function signUp(req, res) {
       `INSERT INTO users (name, email, password) VALUES ($1, $2, $3);`,
       [name, email, hashPass]
     );
-
-    res.status(201).send();
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: "Erro interno do servidor", error: err });
   }
 }
@@ -25,11 +22,10 @@ export async function signIn(req, res) {
   const token = uuid();
 
   try {
-    await db.query(`INSERT INTO sessions (token, user_id) VALUES ($1, $2);`, [
+    await db.query(`INSERT INTO sessions (token, userid) VALUES ($1, $2);`, [
       token,
       user.id,
     ]);
-    res.status(200).send({ token });
   } catch (err) {
     res.status(500).json({ message: "Erro interno do servidor" });
   }
