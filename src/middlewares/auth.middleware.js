@@ -1,9 +1,9 @@
 import { db } from "../database/database.connection.js";
-import { userSchema } from "../schemas/users.schema.js";
+import { userSchema, userLoginSchema } from "../schemas/users.schema.js";
 import bcrypt from "bcrypt";
 
 export async function signUpMiddleware(req, res, next) {
-  const { password, confirmPassword, email, name } = req.body;
+  const { name, email, password, confirmPassword } = req.body;
 
   try {
     const { error } = userSchema.validate(req.body, { abortEarly: false });
@@ -13,29 +13,19 @@ export async function signUpMiddleware(req, res, next) {
       return res.status(422).json({ errors });
     }
 
-    if (password !== confirmPassword) {
-      return res.status(422).json({ message: "As senhas não são iguais!" });
-    }
-
-    if (
-      password === "" ||
-      confirmPassword === "" ||
-      email === "" ||
-      name === ""
-    ) {
+    if (!name || !email || !password || !confirmPassword) {
       return res.status(422).json({ message: "Preencha todos os campos!" });
     }
 
-    if (
-      typeof password !== "string" ||
-      typeof confirmPassword !== "string" ||
-      typeof email !== "string" ||
-      typeof name !== "string"
-    ) {
-      return res.status(422).json({ message: "Envie os dados corretamente!" });
+    const minPassword = 6;
+    if (password.length < minPassword) {
+      return res
+        .status(422)
+        .json({ message: "A senha deve ter no mínimo 6 caracteres!" });
     }
 
-    if (!email.includes("@")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       return res.status(422).json({ message: "Forneça um email válido!" });
     }
 
@@ -43,12 +33,23 @@ export async function signUpMiddleware(req, res, next) {
       email,
     ]);
 
-    if (userExists.rowCount > 0) {
+    if (userExists.rowCount !== 0) {
       return res.status(409).json({ message: "Usuário já cadastrado" });
     }
 
-    res.locals.user = req.body;
-    next();
+    const hashPass = bcrypt.hashSync(password, 10);
+
+    const queryText = `
+      INSERT INTO users (name, email, password, confirmpassword, createdAt)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+      RETURNING *
+    `;
+    const queryValues = [name, email, hashPass, confirmPassword];
+
+    const { rows } = await db.query(queryText, queryValues);
+
+    res.locals.user = rows[0];
+    return res.status(201).send();
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Erro interno do servidor" });
@@ -56,26 +57,18 @@ export async function signUpMiddleware(req, res, next) {
 }
 
 export async function signInMiddleware(req, res, next) {
-  const { password, email } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const { error } = userSchema.validate(req.body, { abortEarly: false });
+    const { error } = userLoginSchema.validate(req.body, { abortEarly: false });
 
     if (error) {
       const errors = error.details.map((err) => err.message);
       return res.status(422).json({ errors });
     }
 
-    if (password === "" || email === "") {
+    if (email.trim() === "" || password.trim() === "") {
       return res.status(422).json({ message: "Preencha todos os campos!" });
-    }
-
-    if (typeof password !== "string" || typeof email !== "string") {
-      return res.status(422).json({ message: "Envie os dados corretamente!" });
-    }
-
-    if (!email.includes("@")) {
-      return res.status(422).json({ message: "Forneça um email válido!" });
     }
 
     const userExists = await db.query(`SELECT * FROM users WHERE email = $1;`, [

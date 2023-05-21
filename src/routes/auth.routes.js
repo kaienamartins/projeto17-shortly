@@ -7,15 +7,8 @@ import {
 
 const authRouter = Router();
 
-authRouter.post(
-  "/signup",
-  signUp,
-  signUpMiddleware
-);
-authRouter.post(
-  "/signin",
-  signIn,
-  signInMiddleware
-);
+authRouter.post("/signup", signUpMiddleware, signUp);
+
+authRouter.post("/signin", signInMiddleware, signIn);
 
 export default authRouter;

@@ -8,6 +8,7 @@ export const userSchema = joi.object({
   visitCount: joi.number().default(0),
 });
 
+
 export const userLoginSchema = joi.object({
   email: joi.string().email().required(),
   password: joi.string().trim().required(),
