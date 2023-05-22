@@ -3,7 +3,7 @@ import { v4 as uuid } from "uuid";
 import bcrypt from "bcrypt";
 
 export async function signUp(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password } = res.locals.userData;
 
   const hashPass = bcrypt.hashSync(password, 10);
 
@@ -12,8 +12,11 @@ export async function signUp(req, res) {
       `INSERT INTO users (name, email, password) VALUES ($1, $2, $3);`,
       [name, email, hashPass]
     );
+
+    return res.status(201).json({ message: "Usuário criado com sucesso!" });
   } catch (err) {
-    res.status(500).json({ message: "Erro interno do servidor", error: err });
+    console.error(err);
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
 

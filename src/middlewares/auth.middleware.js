@@ -1,3 +1,4 @@
+import { db } from "../database/database.connection.js";
 import { userSchema, userLoginSchema } from "../schemas/users.schema.js";
 
 export async function signUpMiddleware(req, res, next) {
@@ -27,18 +28,26 @@ export async function signUpMiddleware(req, res, next) {
       return res.status(422).json({ message: "Forneça um email válido!" });
     }
 
+    const existingUser = await db.query(
+      `SELECT * FROM users WHERE email = $1;`,
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ message: "Email já cadastrado!" });
+    }
+
     res.locals.userData = {
       name,
       email,
       password,
       confirmPassword,
     };
-    res.status(201).send();
+    next();
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
-
-  next();
 }
 
 export async function signInMiddleware(req, res, next) {
