@@ -121,7 +121,7 @@ export async function getRanking(req, res) {
       id: user.id,
       name: user.name,
       linkscount: parseInt(user.linkscount),
-      visitcount: parseInt(user.visitcount),
+      visitCount: parseInt(user.visitcount),
     }));
 
     res.status(200).json(formattedRanking);
@@ -129,4 +129,3 @@ export async function getRanking(req, res) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
-
