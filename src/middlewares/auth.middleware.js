@@ -1,7 +1,4 @@
-import { db } from "../database/database.connection.js";
 import { userSchema, userLoginSchema } from "../schemas/users.schema.js";
-import bcrypt from "bcrypt";
-import { v4 as uuid } from "uuid";
 
 export async function signUpMiddleware(req, res, next) {
   const { name, email, password, confirmPassword } = req.body;
@@ -30,30 +27,18 @@ export async function signUpMiddleware(req, res, next) {
       return res.status(422).json({ message: "Forneça um email válido!" });
     }
 
-    const userExists = await db.query(`SELECT * FROM users WHERE email = $1;`, [
+    res.locals.userData = {
+      name,
       email,
-    ]);
-
-    if (userExists.rowCount !== 0) {
-      return res.status(409).json({ message: "Usuário já cadastrado" });
-    }
-
-    const hashPass = bcrypt.hashSync(password, 10);
-
-    const queryText = `
-      INSERT INTO users (name, email, password, confirmpassword, createdAt)
-      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
-      RETURNING *
-    `;
-    const queryValues = [name, email, hashPass, confirmPassword];
-
-    const { rows } = await db.query(queryText, queryValues);
-
-    res.locals.user = rows[0];
-    return res.status(201).send();
+      password,
+      confirmPassword,
+    };
+    res.status(201).send();
   } catch (err) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
+
+  next();
 }
 
 export async function signInMiddleware(req, res, next) {
@@ -76,32 +61,14 @@ export async function signInMiddleware(req, res, next) {
       return res.status(422).json({ message: "Forneça um email válido!" });
     }
 
-    const userExists = await db.query(`SELECT * FROM users WHERE email = $1;`, [
+    res.locals.loginData = {
       email,
-    ]);
-
-    if (userExists.rowCount === 0) {
-      return res.status(401).json({ message: "Usuário não cadastrado!" });
-    }
-
-    const correspPass = bcrypt.compareSync(
       password,
-      userExists.rows[0].password
-    );
+    };
 
-    if (!correspPass) {
-      return res.status(401).json({ message: "Senha incorreta!" });
-    }
-
-    const token = uuid();
-
-    await db.query(`INSERT INTO sessions (token, userid) VALUES ($1, $2);`, [
-      token,
-      userExists.rows[0].id,
-    ]);
-
-    return res.status(200).json({ token });
+    next();
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
