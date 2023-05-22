@@ -101,3 +101,57 @@ export async function deleteUrl(req, res) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
+
+export async function userUrls(req, res) {
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(401).json({ message: "Token inválido!" });
+  }
+
+  try{
+
+    const session = await db.query(`SELECT * FROM sessions WHERE token = $1;`, [
+      token,
+    ]);
+
+    if (session.rows.length === 0) {
+      return res.status(401).json({ message: "Você não está logado!" });
+    }
+
+    const userId = session.rows[0].userid;
+
+    const user = await db.query(`SELECT * FROM users WHERE id = $1;`, [userId]);
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado!" });
+    }
+
+    const urls = await db.query(`SELECT * FROM urls WHERE userid = $1;`, [
+      userId,
+    ]);
+
+    const shortenedUrls = urls.rows.map((url) => {
+      return {
+        id: url.id,
+        shortUrl: url.shorturl,
+        url: url.url,
+        visitCount: url.visitcount,
+      };
+    });
+
+    const visitCount = urls.rows.reduce((acc, curr) => {
+      return acc + curr.visitcount;
+    }, 0);
+
+    return res.status(200).json({
+      id: user.rows[0].id,
+      name: user.rows[0].name,
+      visitCount: visitCount,
+      shortenedUrls: shortenedUrls,
+    });
+  }catch(err){
+    return res.status(500).json({ message: "Erro interno do servidor" });
+  }
+}

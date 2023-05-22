@@ -6,6 +6,7 @@ import { shortenURLMiddleware } from "../middlewares/url.middleware.js";
 import { getUrlById } from "../controllers/url.controller.js";
 import { openUrl } from "../controllers/url.controller.js";
 import { deleteUrl } from "../controllers/url.controller.js";
+import { userUrls } from "../controllers/url.controller.js";
 
 const urlsRouter = Router();
 
@@ -21,5 +22,9 @@ urlsRouter.get("/urls/:id", getUrlById);
 urlsRouter.get("/urls/open/:shortUrl", openUrl);
 
 urlsRouter.delete("/urls/:id", deleteUrl);
+
+urlsRouter.get("/users/me", userUrls);
+
+
 
 export default urlsRouter;
