@@ -5,7 +5,6 @@ export const userSchema = joi.object({
   email: joi.string().email().required(),
   password: joi.string().min(6).required(),
   confirmPassword: joi.string().valid(joi.ref("password")).required(),
-  visitCount: joi.number().default(0),
 });
 
 

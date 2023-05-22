@@ -61,7 +61,8 @@ CREATE TABLE public.urls (
     userid integer NOT NULL,
     shorturl character varying(8) NOT NULL,
     url text NOT NULL,
-    createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    visitcount integer DEFAULT 0 NOT NULL
 );
 
 
@@ -144,40 +145,50 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+INSERT INTO public.sessions VALUES (11, 'cecabf72-9de3-40eb-938f-1c7253e58656', 21, '2023-05-21 20:46:02.589542');
 
 
 --
 -- Data for Name: urls; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+INSERT INTO public.urls VALUES (1, 21, 'YMYnvJKm', 'https://www.starplus.com/series/the-simpsons/3ZoBZ52QHb4x.', '2023-05-21 21:12:50.455247', 0);
 
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.users VALUES (13, 'Ana Carolina', 'ana@gmail.com', '$2b$10$MqJBhVWuqh6ZyOtaQOIOVOn1zF3EStgQINjS50Ov4YL.BapdLc.YG', '2023-05-21 15:55:23.015046', NULL);
+INSERT INTO public.users VALUES (15, 'kaiena', 'kaiena@gmail.com', '$2b$10$1HygG6ylzs.LiOU7.eYjIe1QQvsJCpH2iqtjGut0B0N.j8xdCCxOC', '2023-05-21 16:03:53.403984', '123456');
+INSERT INTO public.users VALUES (17, 'Daisy', 'daisy@gmail.com', '$2b$10$dtbphAlACdBQ0OA.sckpuOY/VzhYOyNIjI5c6vWYLoij6MPHdLJoG', '2023-05-21 16:05:07.195907', '123456');
+INSERT INTO public.users VALUES (19, 'Marley', 'marley@gmail.com', '$2b$10$RZcSfdTjVTaZyPqYhrA8TO/2wlL19yoi/nZ3Hmf275ICXdJQWSTjm', '2023-05-21 16:10:37.814907', '123456');
+INSERT INTO public.users VALUES (20, 'Jasmine', 'jasmine@gmail.com', '$2b$10$IOPyVSWK09CXUQ1G7zVlzu.YPpLAt3hQSzGJvGr6zru9hsK6ohro.', '2023-05-21 16:34:12.737685', '123456');
+INSERT INTO public.users VALUES (21, 'Ana', 'ana@gmail.com', '$2b$10$WcNuD7ephm48eHy/qpULb.Ic7ecREXrZeikLnwaaUMVYptCmPUhcK', '2023-05-21 16:45:34.840684', '123456');
+INSERT INTO public.users VALUES (22, 'Lana', 'lana@gmail.com', '$2b$10$HSOhm1n0QYd/clUWljwR6e32F2bj/njviRHKDD4jNhjedc5XCBlUy', '2023-05-21 16:53:03.531494', '123456');
+INSERT INTO public.users VALUES (23, 'Taylor', 'taylor@gmail.com', '$2b$10$eK8AoAK3mDh4jDSz1Xh3MOsryqm.NwMGBetdyJOjm2AX.I7G9dXR6', '2023-05-21 19:05:34.624505', NULL);
+INSERT INTO public.users VALUES (26, 'João', 'joao@gmail.com', '$2b$10$omBuGlebGJfkFtzfO7HFGegvtJEtvtB8VGqNYo9xJ0JALS3GMlwMW', '2023-05-21 19:20:29.48074', NULL);
+INSERT INTO public.users VALUES (27, 'Maria', 'maria@gmail.com', '$2b$10$XglvQD6fOZEW8vJzvQgkAuSj8ZSgcKBoFrPg63HwE5w4VaMYrbnzi', '2023-05-21 20:07:41.179404', NULL);
 
 
 --
 -- Name: sessions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.sessions_id_seq', 1, false);
+SELECT pg_catalog.setval('public.sessions_id_seq', 11, true);
 
 
 --
 -- Name: urls_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.urls_id_seq', 1, false);
+SELECT pg_catalog.setval('public.urls_id_seq', 1, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 14, true);
+SELECT pg_catalog.setval('public.users_id_seq', 27, true);
 
 
 --
