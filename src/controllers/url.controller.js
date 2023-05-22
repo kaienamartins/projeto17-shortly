@@ -19,44 +19,25 @@ export async function shortenUrl(req, res) {
 }
 
 export async function getUrlById(req, res) {
-  const { id } = req.params;
+  const url = req.url;
 
-  try {
-    const url = await db.query(`SELECT * FROM urls WHERE id = $1;`, [id]);
-
-    if (url.rows.length === 0) {
-      return res.status(404).json({ message: "URL não encontrada!" });
-    }
-
-    return res.status(200).json({
-      id: url.rows[0].id,
-      shortUrl: url.rows[0].shorturl,
-      url: url.rows[0].url,
-    });
-  } catch (err) {
-    return res.status(500).json({ message: "Erro interno do servidor" });
-  }
+  return res.status(200).json({
+    id: url.id,
+    shortUrl: url.shorturl,
+    url: url.url,
+  });
 }
 
 export async function openUrl(req, res) {
-  const { shortUrl } = req.params;
+  const url = req.url;
 
   try {
-    const url = await db.query(`SELECT * FROM urls WHERE shorturl = $1;`, [
-      shortUrl,
-    ]);
-
-    if (url.rows.length === 0) {
-      return res.status(404).json({ message: "URL não encontrada!" });
-    }
-
     await db.query(
       `UPDATE urls SET visitcount = visitcount + 1 WHERE shorturl = $1;`,
-      [shortUrl]
+      [url.shorturl]
     );
 
-    const original = url.rows[0].url;
-    return res.status(200).json({ url: original });
+    return res.status(200).json({ url: url.url });
   } catch (err) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
@@ -64,24 +45,9 @@ export async function openUrl(req, res) {
 
 export async function deleteUrl(req, res) {
   const { id } = req.params;
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
-
-  if (!token) {
-    return res.status(401).json({ message: "Token inválido!" });
-  }
+  const userId = req.userId;
 
   try {
-    const session = await db.query(`SELECT * FROM sessions WHERE token = $1;`, [
-      token,
-    ]);
-
-    if (session.rows.length === 0) {
-      return res.status(401).json({ message: "Você não está logado!" });
-    }
-
-    const userId = session.rows[0].userid;
-
     const url = await db.query(`SELECT * FROM urls WHERE id = $1;`, [id]);
 
     if (url.rows.length === 0) {
@@ -103,25 +69,9 @@ export async function deleteUrl(req, res) {
 }
 
 export async function userUrls(req, res) {
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
+  const userId = req.userId;
 
-  if (!token) {
-    return res.status(401).json({ message: "Token inválido!" });
-  }
-
-  try{
-
-    const session = await db.query(`SELECT * FROM sessions WHERE token = $1;`, [
-      token,
-    ]);
-
-    if (session.rows.length === 0) {
-      return res.status(401).json({ message: "Você não está logado!" });
-    }
-
-    const userId = session.rows[0].userid;
-
+  try {
     const user = await db.query(`SELECT * FROM users WHERE id = $1;`, [userId]);
 
     if (user.rows.length === 0) {
@@ -151,7 +101,25 @@ export async function userUrls(req, res) {
       visitCount: visitCount,
       shortenedUrls: shortenedUrls,
     });
-  }catch(err){
+  } catch (err) {
+    return res.status(500).json({ message: "Erro interno do servidor" });
+  }
+}
+
+export async function getRanking(req, res) {
+  try {
+    const ranking = await db.query(
+      `SELECT users.id, users.name, CAST(COUNT(urls.id) AS INTEGER) AS linksCount, COALESCE(CAST(SUM(urls.visitcount) AS INTEGER), 0) AS visitCount
+      FROM users
+      LEFT JOIN urls ON users.id = urls.userid
+      GROUP BY users.id
+      ORDER BY visitCount DESC
+      LIMIT 10;
+      `
+    );
+
+    res.status(200).json(ranking.rows);
+  } catch (err) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
