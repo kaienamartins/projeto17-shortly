@@ -120,7 +120,7 @@ export async function getRanking(req, res) {
     const formattedRanking = ranking.rows.map((user) => ({
       id: user.id,
       name: user.name,
-      linkscount: parseInt(user.linkscount),
+      linksCount: parseInt(user.linkscount),
       visitCount: parseInt(user.visitcount),
     }));
 
