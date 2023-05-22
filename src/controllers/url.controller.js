@@ -108,18 +108,25 @@ export async function userUrls(req, res) {
 
 export async function getRanking(req, res) {
   try {
-    const ranking = await db.query(
-      `SELECT users.id, users.name, CAST(COUNT(urls.id) AS INTEGER) AS linksCount, COALESCE(CAST(SUM(urls.visitcount) AS INTEGER), 0) AS visitCount
+    const ranking = await db.query(`
+      SELECT users.id, users.name, COUNT(urls.id) AS linksCount, COALESCE(SUM(urls.visitcount), 0) AS visitCount
       FROM users
       LEFT JOIN urls ON users.id = urls.userid
       GROUP BY users.id
       ORDER BY visitCount DESC
       LIMIT 10;
-      `
-    );
+    `);
 
-    res.status(200).json(ranking.rows);
+    const formattedRanking = ranking.rows.map((user) => ({
+      id: user.id,
+      name: user.name,
+      linkscount: parseInt(user.linkscount),
+      visitcount: parseInt(user.visitcount),
+    }));
+
+    res.status(200).json(formattedRanking);
   } catch (err) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
+
