@@ -2,8 +2,8 @@ import { db } from "../database/database.connection.js";
 import { nanoid } from "nanoid";
 
 export async function shortenUrl(req, res) {
-  const { url } = res.locals;
-  const userId = res.locals.userId;
+  const { url } = req.body;
+  const { userId } = res.locals;
   const short = nanoid(8);
 
   try {
