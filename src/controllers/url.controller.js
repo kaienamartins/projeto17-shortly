@@ -37,7 +37,7 @@ export async function openUrl(req, res) {
       [url.shorturl]
     );
 
-    return res.status(200).json({ url: url.url });
+    return res.status(302).json({ url: url.url });
   } catch (err) {
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
